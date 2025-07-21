@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// User roles
+// @map only affects the database column value, not the enum value in code
+enum Role {
+  USER @map("user")
+  ADMIN @map("admin")
+}
+
+/// Plan billing cycles
+enum BillingCycle {
+  MONTHLY @map("monthly")
+  YEARLY @map("yearly")
+}
+
+/// Payment status lifecycle
+enum PaymentStatus {
+  PENDING @map("pending")
+  COMPLETED @map("completed")
+  FAILED @map("failed")
+  REFUNDED @map("refunded")
+}
+
+//–– MODELS
+
+model User {
+  id             Int            @id @default(autoincrement())
+  name           String         @db.VarChar(255)
+  email          String         @unique
+  password       String
+  role           Role           @default(USER)
+  // relations
+  subscriptions  Subscription[]
+  payments       Payment[]
+  // timestamps
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+
+model Plan {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name     String   @db.VarChar(255)
+  description   String?
+  price    Decimal    @default(0)
+  active   Boolean  @default(true)
+  billingCycle BillingCycle
+  features       String[]
+
+  Subscription Subscription[]
+}
+
+model Subscription {
+  id             Int            @id @default(autoincrement())
+  active         Boolean        @default(true)
+  startDate      DateTime       @default(now())
+  endDate        DateTime?      /// when subscription was cancelled/expired
+  user           User           @relation(fields: [userId], references: [id])
+  userId         Int
+  plan           Plan           @relation(fields: [planId], references: [id])
+  planId         Int
+  payments       Payment[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  nextBillingDate    DateTime?
+
+}
+
+model Payment {
+  id                 Int            @id @default(autoincrement())
+  amount             Decimal        @db.Decimal(10, 2)
+  status             PaymentStatus  @default(PENDING)
+  lastPaid           DateTime?
+  user               User           @relation(fields: [userId], references: [id])
+  userId             Int
+  subscription       Subscription   @relation(fields: [subscriptionId], references: [id])
+  subscriptionId     Int
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+}

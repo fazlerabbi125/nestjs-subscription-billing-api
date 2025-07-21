@@ -3,6 +3,6 @@
     "endOfLine": "auto",
     "printWidth": 100,
     "tabWidth": 4,
-    "trailingComma": "es5",
-    "singleQuote": false
+    "trailingComma": "all",
+    "singleQuote": true
 }
