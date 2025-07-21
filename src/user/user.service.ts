@@ -1,16 +1,17 @@
-import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from './prisma.service';
-import { RegisterUserDto } from '../dtos/user/register-user.dto';
-import { UserResponseDto } from '../dtos/user/user-response.dto';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '@/src/prisma/prisma.service';
+import { RegisterUserDto } from './dtos/register-user.dto';
+import { UserResponseDto } from './dtos/user-response.dto';
 import * as bcrypt from 'bcrypt';
-import { Role, User } from '../../generated/prisma';
+import { Role, User } from '@/generated/prisma';
+
+const SALT_ROUNDS = 10;
 
 @Injectable()
 export class UserService {
-    saltRounds = 10;
     constructor(private readonly prisma: PrismaService) {}
 
-    async checkUserExists(email: string, password: string): Promise<User | null> {
+    async checkCredentials(email: string, password: string): Promise<User | null> {
         const user = await this.prisma.user.findUnique({
             where: { email },
         });
@@ -22,20 +23,13 @@ export class UserService {
 
     async registerUser(registerUserDto: RegisterUserDto): Promise<UserResponseDto> {
         const { email, password, name, role = Role.USER } = registerUserDto;
-
-        // Check if user already exists
         const existingUser = await this.prisma.user.findUnique({
             where: { email },
         });
-
-        if (existingUser) {
-            throw new ConflictException('User with this email already exists');
-        }
-
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, this.saltRounds);
-
+        if (existingUser) throw new BadRequestException('User with this email already exists');
         try {
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
             // Create user
             const user = await this.prisma.user.create({
                 data: {
@@ -44,10 +38,13 @@ export class UserService {
                     role,
                     name,
                 },
+                omit: {
+                    password: true,
+                },
             });
 
             return user;
-        } catch (error) {
+        } catch {
             throw new BadRequestException('Failed to create user');
         }
     }

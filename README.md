@@ -1,4 +1,4 @@
-# Project Setup Instructions
+# NestJS Subscription Billing API
 
 ## 🔧 Installation & Setup
 

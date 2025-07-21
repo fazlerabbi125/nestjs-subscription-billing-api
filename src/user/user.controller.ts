@@ -1,9 +1,9 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { UserService } from '../services/user.service';
-import { RegisterUserDto } from '../dtos/user/register-user.dto';
-import { UserResponseDto } from '../dtos/user/user-response.dto';
-import { commonSuccessResponse, SuccessResType } from '@src/common/success.response';
+import { UserService } from './user.service';
+import { RegisterUserDto } from './dtos/register-user.dto';
+import { UserResponseDto } from './dtos/user-response.dto';
+import { SuccessResponse } from '@/src/common/common-responses';
 
 @ApiTags('Users')
 @Controller('users')
@@ -21,21 +21,21 @@ export class UserController {
         description: 'User registration data',
     })
     @ApiResponse({
-        status: 201,
+        status: HttpStatus.CREATED,
         description: 'User successfully created',
     })
     @ApiResponse({
-        status: 400,
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
         description: 'Bad request - Invalid input data',
     })
     @ApiResponse({
-        status: 409,
-        description: 'Conflict - User with this email already exists',
+        status: HttpStatus.BAD_REQUEST,
+        description: 'Bad request - User with this email already exists',
     })
     async registerUser(
         @Body() registerUserDto: RegisterUserDto,
-    ): Promise<SuccessResType<UserResponseDto>> {
+    ): Promise<SuccessResponse<UserResponseDto>> {
         const user = await this.userService.registerUser(registerUserDto);
-        return commonSuccessResponse(user, 'User successfully registered');
+        return new SuccessResponse(user, 'User successfully registered');
     }
 }

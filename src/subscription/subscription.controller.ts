@@ -10,14 +10,16 @@ import {
     HttpStatus,
     NotFoundException,
 } from '@nestjs/common';
+import { Request as Req } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
-import { SubscriptionService } from '../services/subscription.service';
-import { CreateSubscriptionDto } from '../dtos/subscription/create-subscription.dto';
-import { SwitchSubscriptionDto } from '../dtos/subscription/switch-subscription.dto';
-import { SubscriptionResponseDto } from '../dtos/subscription/subscription-response.dto';
+import { SubscriptionService } from './subscription.service';
+import { CreateSubscriptionDto } from './dtos/create-subscription.dto';
+import { SwitchSubscriptionDto } from './dtos/switch-subscription.dto';
+import { SubscriptionResponseDto } from './dtos/subscription-response.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { MemberGuard } from '../common/guards/member.guard';
-import { commonSuccessResponse, SuccessResType } from '../common/success.response';
+import { SuccessResponse } from '../common/common-responses';
+import { User } from '../common/decorators/user.decorator';
 
 @ApiTags('Subscriptions')
 @Controller('subscriptions')
@@ -28,6 +30,8 @@ export class SubscriptionController {
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
+    @UseGuards(AuthGuard, MemberGuard)
+    @ApiBearerAuth()
     @ApiOperation({
         summary: 'Create a new subscription',
         description:
@@ -64,13 +68,13 @@ export class SubscriptionController {
     })
     async createSubscription(
         @Body() createSubscriptionDto: CreateSubscriptionDto,
-        @Request() req: any,
-    ): Promise<SuccessResType<SubscriptionResponseDto>> {
+        @User() user: NonNullable<Req['user']>,
+    ): Promise<SuccessResponse<SubscriptionResponseDto>> {
         const subscription = await this.subscriptionService.createSubscription(
-            req.user.id,
+            user.id,
             createSubscriptionDto,
         );
-        return commonSuccessResponse(subscription, 'Subscription created successfully');
+        return new SuccessResponse(subscription, 'Subscription created successfully');
     }
 
     @Get()
@@ -98,14 +102,14 @@ export class SubscriptionController {
     })
     async getUserSubscription(
         @Request() req: any,
-    ): Promise<SuccessResType<SubscriptionResponseDto>> {
+    ): Promise<SuccessResponse<SubscriptionResponseDto>> {
         const subscription = await this.subscriptionService.getUserSubscription(req.user.id);
 
         if (!subscription) {
             throw new NotFoundException('No active subscription found');
         }
 
-        return commonSuccessResponse(subscription, 'Subscription retrieved successfully');
+        return new SuccessResponse(subscription, 'Subscription retrieved successfully');
     }
 
     @Patch('cancel')
@@ -130,9 +134,9 @@ export class SubscriptionController {
         status: 404,
         description: 'Not found - No active subscription found',
     })
-    async cancelSubscription(@Request() req: any): Promise<SuccessResType<null>> {
+    async cancelSubscription(@Request() req: any): Promise<SuccessResponse<null>> {
         await this.subscriptionService.cancelSubscription(req.user.id);
-        return commonSuccessResponse(null, 'Subscription cancelled successfully');
+        return new SuccessResponse(null, 'Subscription cancelled successfully');
     }
 
     @Post('switch')
@@ -170,11 +174,11 @@ export class SubscriptionController {
     async switchSubscription(
         @Body() switchSubscriptionDto: SwitchSubscriptionDto,
         @Request() req: any,
-    ): Promise<SuccessResType<SubscriptionResponseDto>> {
+    ): Promise<SuccessResponse<SubscriptionResponseDto>> {
         const subscription = await this.subscriptionService.switchSubscription(
             req.user.id,
             switchSubscriptionDto,
         );
-        return commonSuccessResponse(subscription, 'Subscription switched successfully');
+        return new SuccessResponse(subscription, 'Subscription switched successfully');
     }
 }

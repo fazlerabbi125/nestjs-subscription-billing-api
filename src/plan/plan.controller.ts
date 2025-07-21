@@ -21,15 +21,15 @@ import {
     ApiBearerAuth,
     ApiQuery,
 } from '@nestjs/swagger';
-import { PlanService } from '../services/plan.service';
-import { CreatePlanDto } from '../dtos/plan/create-plan.dto';
-import { UpdatePlanDto } from '../dtos/plan/update-plan.dto';
-import { PlanResponseDto } from '../dtos/plan/plan-response.dto';
-import { GetPlansQueryDto } from '../dtos/plan/get-plans-query.dto';
-import { PaginatedPlansResponseDto } from '../dtos/plan/paginated-plans-response.dto';
+import { PlanService } from './plan.service';
+import { CreatePlanDto } from './dtos/create-plan.dto';
+import { UpdatePlanDto } from './dtos/update-plan.dto';
+import { PlanResponseDto } from './dtos/plan-response.dto';
+import { GetPlansQueryDto } from './dtos/get-plans-query.dto';
+import { PaginatedPlansResponseDto } from './dtos/paginated-plans-response.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
-import { commonSuccessResponse, SuccessResType } from '../common/success.response';
+import { SuccessResponse } from '../common/common-responses';
 
 @ApiTags('Plans')
 @Controller('plans')
@@ -86,9 +86,9 @@ export class PlanController {
     })
     async getAllPlans(
         @Query() query: GetPlansQueryDto,
-    ): Promise<SuccessResType<PaginatedPlansResponseDto<PlanResponseDto>>> {
+    ): Promise<SuccessResponse<PaginatedPlansResponseDto<PlanResponseDto>>> {
         const result = await this.planService.getAllPlans(query);
-        return commonSuccessResponse(result, 'Plans retrieved successfully');
+        return new SuccessResponse(result, 'Plans retrieved successfully');
     }
 
     @Get(':id')
@@ -108,9 +108,9 @@ export class PlanController {
     })
     async getPlanById(
         @Param('id', ParseIntPipe) id: number,
-    ): Promise<SuccessResType<PlanResponseDto>> {
+    ): Promise<SuccessResponse<PlanResponseDto>> {
         const plan = await this.planService.getPlanById(id);
-        return commonSuccessResponse(plan, 'Plan retrieved successfully');
+        return new SuccessResponse(plan, 'Plan retrieved successfully');
     }
 
     @Post()
@@ -144,9 +144,9 @@ export class PlanController {
     })
     async createPlan(
         @Body() createPlanDto: CreatePlanDto,
-    ): Promise<SuccessResType<PlanResponseDto>> {
+    ): Promise<SuccessResponse<PlanResponseDto>> {
         const plan = await this.planService.createPlan(createPlanDto);
-        return commonSuccessResponse(plan, 'Plan created successfully');
+        return new SuccessResponse(plan, 'Plan created successfully');
     }
 
     @Put(':id')
@@ -185,9 +185,9 @@ export class PlanController {
     async updatePlan(
         @Param('id', ParseIntPipe) id: number,
         @Body() updatePlanDto: UpdatePlanDto,
-    ): Promise<SuccessResType<PlanResponseDto>> {
+    ): Promise<SuccessResponse<PlanResponseDto>> {
         const plan = await this.planService.updatePlan(id, updatePlanDto);
-        return commonSuccessResponse(plan, 'Plan updated successfully');
+        return new SuccessResponse(plan, 'Plan updated successfully');
     }
 
     @Patch(':id/toggle-activation')
@@ -217,9 +217,9 @@ export class PlanController {
     })
     async togglePlanActivation(
         @Param('id', ParseIntPipe) id: number,
-    ): Promise<SuccessResType<PlanResponseDto>> {
+    ): Promise<SuccessResponse<PlanResponseDto>> {
         const plan = await this.planService.togglePlanActivation(id);
-        return commonSuccessResponse(plan, 'Plan activation toggled successfully');
+        return new SuccessResponse(plan, 'Plan activation toggled successfully');
     }
 
     @Delete(':id')
@@ -246,8 +246,8 @@ export class PlanController {
         status: 404,
         description: 'Not found - Plan not found',
     })
-    async deletePlan(@Param('id', ParseIntPipe) id: number): Promise<SuccessResType<null>> {
+    async deletePlan(@Param('id', ParseIntPipe) id: number): Promise<SuccessResponse<null>> {
         await this.planService.deletePlan(id);
-        return commonSuccessResponse(null, 'Plan deleted successfully');
+        return new SuccessResponse(null, 'Plan deleted successfully');
     }
 }

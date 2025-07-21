@@ -1,9 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { JWT_keys } from '../constants';
-import { PrismaService } from '@src/services/prisma.service';
-
+import { JWT_config } from '../constants';
+import { PrismaService } from '@/src/prisma/prisma.service';
+import { JwtPayload } from 'jsonwebtoken';
 @Injectable()
 export class AuthGuard implements CanActivate {
     constructor(
@@ -18,12 +18,11 @@ export class AuthGuard implements CanActivate {
             throw new UnauthorizedException();
         }
         try {
-            const payload = await this.jwtService.verifyAsync(token, {
-                secret: JWT_keys.access,
+            const payload: JwtPayload = await this.jwtService.verifyAsync(token, {
+                secret: JWT_config.access.secret,
             });
-            // 💡 We're assigning the payload to the request object here
-            // so that we can access it in our route handlers
-            const user = await this.prisma.user.findUniqueOrThrow({ where: { id: payload?.id } });
+            if (!payload?.id) throw new Error('User identification not found in token');
+            const user = await this.prisma.user.findUniqueOrThrow({ where: { id: payload.id } });
             request.user = {
                 id: user.id,
                 role: user.role,

@@ -9,11 +9,11 @@ import {
     HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { PaymentService } from '../services/payment.service';
-import { PaymentResponseDto } from '../dtos/payment/payment-response.dto';
+import { PaymentService } from './payment.service';
+import { PaymentResponseDto } from './dtos/payment-response.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { MemberGuard } from '../common/guards/member.guard';
-import { commonSuccessResponse, SuccessResType } from '../common/success.response';
+import { SuccessResponse } from '../common/common-responses';
 
 @ApiTags('Payments')
 @Controller('payments')
@@ -45,9 +45,9 @@ export class PaymentController {
         status: 403,
         description: 'Forbidden - User access required',
     })
-    async getUserPayments(@Request() req: any): Promise<SuccessResType<PaymentResponseDto[]>> {
+    async getUserPayments(@Request() req: any): Promise<SuccessResponse<PaymentResponseDto[]>> {
         const payments = await this.paymentService.getUserPayments(req.user.id);
-        return commonSuccessResponse(payments, 'Payment history retrieved successfully');
+        return new SuccessResponse(payments, 'Payment history retrieved successfully');
     }
 
     @Get(':id')
@@ -80,8 +80,8 @@ export class PaymentController {
     async getPaymentById(
         @Param('id', ParseIntPipe) paymentId: number,
         @Request() req: any,
-    ): Promise<SuccessResType<PaymentResponseDto>> {
+    ): Promise<SuccessResponse<PaymentResponseDto>> {
         const payment = await this.paymentService.getPaymentById(req.user.id, paymentId);
-        return commonSuccessResponse(payment, 'Payment invoice details retrieved successfully');
+        return new SuccessResponse(payment, 'Payment invoice details retrieved successfully');
     }
 }

@@ -4,10 +4,10 @@ import {
     BadRequestException,
     ConflictException,
 } from '@nestjs/common';
-import { PrismaService } from './prisma.service';
-import { CreateSubscriptionDto } from '../dtos/subscription/create-subscription.dto';
-import { SwitchSubscriptionDto } from '../dtos/subscription/switch-subscription.dto';
-import { SubscriptionResponseDto } from '../dtos/subscription/subscription-response.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateSubscriptionDto } from './dtos/create-subscription.dto';
+import { SwitchSubscriptionDto } from './dtos/switch-subscription.dto';
+import { SubscriptionResponseDto } from './dtos/subscription-response.dto';
 import { BillingCycle, Plan, Subscription } from '../../generated/prisma';
 
 @Injectable()

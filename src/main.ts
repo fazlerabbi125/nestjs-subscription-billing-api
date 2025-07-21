@@ -1,9 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { CustomExceptionFilter } from './common/custom-exception.filter';
+import { HttpStatus, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -19,20 +19,20 @@ async function bootstrap() {
     app.useGlobalPipes(
         new ValidationPipe({
             whitelist: true,
-            forbidNonWhitelisted: true,
             transform: true,
+            errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
         }),
     );
 
     app.use(cookieParser());
-    app.useGlobalFilters(new CustomExceptionFilter());
+    // app.useGlobalFilters(new CustomExceptionFilter());
 
     // Swagger configuration
     const config = new DocumentBuilder()
         .setTitle('Subscription Billing Nest API')
         .setDescription('Subscription Billing API documentation')
         .setVersion('1.0')
-        .addTag('Authentication')
+        .addTag('Auth')
         .addTag('Users')
         .addTag('Plans')
         .addTag('Subscriptions')
@@ -41,7 +41,7 @@ async function bootstrap() {
         .build();
 
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document);
+    SwaggerModule.setup('docs', app, document);
 
     await app.listen(process.env.PORT ?? 3000);
 }

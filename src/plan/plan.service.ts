@@ -1,13 +1,10 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from './prisma.service';
-import { CreatePlanDto } from '../dtos/plan/create-plan.dto';
-import { UpdatePlanDto } from '../dtos/plan/update-plan.dto';
-import { PlanResponseDto } from '../dtos/plan/plan-response.dto';
-import { GetPlansQueryDto } from '../dtos/plan/get-plans-query.dto';
-import {
-    PaginatedPlansResponseDto,
-    PaginationMetaDto,
-} from '../dtos/plan/paginated-plans-response.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreatePlanDto } from './dtos/create-plan.dto';
+import { UpdatePlanDto } from './dtos/update-plan.dto';
+import { PlanResponseDto } from './dtos/plan-response.dto';
+import { GetPlansQueryDto } from './dtos/get-plans-query.dto';
+import { PaginatedPlansResponseDto, PaginationMetaDto } from './dtos/paginated-plans-response.dto';
 import { PAGINATION } from '../common/constants';
 
 @Injectable()
