@@ -29,9 +29,9 @@ export class SubscriptionController {
     constructor(private readonly subscriptionService: SubscriptionService) {}
 
     @Post()
-    @HttpCode(HttpStatus.CREATED)
     @UseGuards(AuthGuard, MemberGuard)
     @ApiBearerAuth()
+    @HttpCode(HttpStatus.CREATED)
     @ApiOperation({
         summary: 'Create a new subscription',
         description:
@@ -140,6 +140,8 @@ export class SubscriptionController {
     }
 
     @Post('switch')
+    @UseGuards(AuthGuard, MemberGuard)
+    @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
         summary: 'Switch subscription plan',
@@ -173,10 +175,10 @@ export class SubscriptionController {
     })
     async switchSubscription(
         @Body() switchSubscriptionDto: SwitchSubscriptionDto,
-        @Request() req: any,
+        @User() user: NonNullable<Req['user']>,
     ): Promise<SuccessResponse<SubscriptionResponseDto>> {
         const subscription = await this.subscriptionService.switchSubscription(
-            req.user.id,
+            user.id,
             switchSubscriptionDto,
         );
         return new SuccessResponse(subscription, 'Subscription switched successfully');

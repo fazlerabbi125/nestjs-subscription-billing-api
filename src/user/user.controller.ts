@@ -5,7 +5,7 @@ import { RegisterUserDto } from './dtos/register-user.dto';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { SuccessResponse } from '@/src/common/common-responses';
 
-@ApiTags('Users')
+@ApiTags('Users') // Not mandatory; uses the first part of the controller class name
 @Controller('users')
 export class UserController {
     constructor(private readonly userService: UserService) {}
@@ -13,14 +13,19 @@ export class UserController {
     @Post('register')
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({
+        // Gives info about the operation
         summary: 'Register a new user',
         description: 'Creates a new user account with email and password',
     })
     @ApiBody({
+        // Not mandatory; can be detected when DTO with Swagger decorators are used on request body
         type: RegisterUserDto,
         description: 'User registration data',
     })
     @ApiResponse({
+        /** specifies response type according to status code
+         * Each Response also has its own Swagger response decorator
+         */
         status: HttpStatus.CREATED,
         description: 'User successfully created',
     })

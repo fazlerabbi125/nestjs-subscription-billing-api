@@ -3,6 +3,7 @@ import { IsEmail, IsString, MinLength, IsEnum, IsOptional } from 'class-validato
 import { Role } from '../../../generated/prisma';
 
 export class RegisterUserDto {
+    //specifies DTO format for request body and responses
     @ApiProperty({
         example: 'john.doe@example.com',
         description: 'The email address of the user',
@@ -24,7 +25,7 @@ export class RegisterUserDto {
         description: 'The role of the user',
         enum: Role,
         default: Role.USER,
-        required: false,
+        required: false, // for optional fields
     })
     @IsOptional()
     @IsEnum(Role)

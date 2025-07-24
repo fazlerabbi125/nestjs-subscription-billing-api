@@ -2,8 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
-import { CustomExceptionFilter } from './common/custom-exception.filter';
-import { HttpStatus, ValidationPipe } from '@nestjs/common';
+// import { CustomExceptionFilter } from './common/custom-exception.filter';
+import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -20,7 +20,16 @@ async function bootstrap() {
         new ValidationPipe({
             whitelist: true,
             transform: true,
-            errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+            exceptionFactory(errors) {
+                const result: Record<string, string[]> = {};
+                errors.forEach((error) => {
+                    result[error.property] = Object.values(error.constraints || {});
+                });
+                return new UnprocessableEntityException({
+                    message: 'Validation error found',
+                    errors: result,
+                });
+            },
         }),
     );
 
@@ -32,12 +41,12 @@ async function bootstrap() {
         .setTitle('Subscription Billing Nest API')
         .setDescription('Subscription Billing API documentation')
         .setVersion('1.0')
-        .addTag('Auth')
+        .addTag('Auth') //Maps to API routes under this tag. By default, it uses the first part of the controller name
         .addTag('Users')
         .addTag('Plans')
         .addTag('Subscriptions')
         .addTag('Payments')
-        .addBearerAuth()
+        .addBearerAuth() // Other Auth types are also available
         .build();
 
     const document = SwaggerModule.createDocument(app, config);

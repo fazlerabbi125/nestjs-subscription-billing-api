@@ -44,6 +44,11 @@ export class PaymentController {
     @ApiResponse({
         status: 403,
         description: 'Forbidden - User access required',
+        // For List responses
+        // type: [PaymentResponseDto],
+        // OR
+        // type: PaymentResponseDto,
+        // isArray: true,
     })
     async getUserPayments(@Request() req: any): Promise<SuccessResponse<PaymentResponseDto[]>> {
         const payments = await this.paymentService.getUserPayments(req.user.id);

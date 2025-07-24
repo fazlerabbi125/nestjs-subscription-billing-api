@@ -22,7 +22,7 @@ export class PlanService {
             limit = PAGINATION.DEFAULT_LIMIT,
         } = query;
 
-        const whereClause: any = {};
+        const whereClause: Record<string, any> = {};
 
         if (name) {
             whereClause.name = {
