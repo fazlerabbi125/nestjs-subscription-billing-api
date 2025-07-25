@@ -38,9 +38,9 @@ export class UserService {
                     role,
                     name,
                 },
-                omit: {
-                    password: true,
-                },
+                // omit: {
+                //     password: true,
+                // },
             });
 
             return user;

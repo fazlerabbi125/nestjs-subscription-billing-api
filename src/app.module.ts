@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { PlanModule } from './plan/plan.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { PaymentModule } from './payment/payment.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { PaymentModule } from './payment/payment.module';
         JwtModule.register({
             global: true,
         }),
+        PrismaModule,
         AuthModule,
         UserModule,
         PlanModule,

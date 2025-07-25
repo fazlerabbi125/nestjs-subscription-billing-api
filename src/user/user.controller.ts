@@ -1,9 +1,10 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { RegisterUserDto } from './dtos/register-user.dto';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { SuccessResponse } from '@/src/common/common-responses';
+import { ResponseInterceptor } from '../common/interceptors/response.interceptor';
 
 @ApiTags('Users') // Not mandatory; uses the first part of the controller class name
 @Controller('users')
@@ -37,10 +38,9 @@ export class UserController {
         status: HttpStatus.BAD_REQUEST,
         description: 'Bad request - User with this email already exists',
     })
-    async registerUser(
-        @Body() registerUserDto: RegisterUserDto,
-    ): Promise<SuccessResponse<UserResponseDto>> {
+    @UseInterceptors(new ResponseInterceptor('User registration successful', UserResponseDto))
+    async registerUser(@Body() registerUserDto: RegisterUserDto): Promise<UserResponseDto> {
         const user = await this.userService.registerUser(registerUserDto);
-        return new SuccessResponse(user, 'User successfully registered');
+        return user;
     }
 }

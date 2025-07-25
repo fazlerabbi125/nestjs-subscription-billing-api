@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '../../../generated/prisma';
+import { Exclude } from 'class-transformer';
 
 export class UserResponseDto {
     @ApiProperty({
@@ -38,4 +39,7 @@ export class UserResponseDto {
         description: 'The date and time when the user was last updated',
     })
     updatedAt: Date;
+
+    @Exclude()
+    password: string;
 }
