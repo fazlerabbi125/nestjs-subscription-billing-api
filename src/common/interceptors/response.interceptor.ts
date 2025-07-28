@@ -1,6 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { map } from 'rxjs/operators';
+import { SuccessResponse } from '../common-responses';
 
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor {
@@ -13,7 +14,7 @@ export class ResponseInterceptor<T> implements NestInterceptor {
         return next.handle().pipe(
             map((data) => {
                 const transformedData = this.dataDto ? plainToInstance(this.dataDto, data) : data;
-                return { success: true, message: this.message, result: transformedData };
+                return new SuccessResponse({ message: this.message, result: transformedData });
             }),
         );
     }

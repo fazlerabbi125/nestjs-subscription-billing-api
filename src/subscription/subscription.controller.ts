@@ -5,6 +5,7 @@ import {
     Patch,
     Body,
     UseGuards,
+    UseInterceptors,
     Request,
     HttpCode,
     HttpStatus,
@@ -18,7 +19,7 @@ import { SwitchSubscriptionDto } from './dtos/switch-subscription.dto';
 import { SubscriptionResponseDto } from './dtos/subscription-response.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { MemberGuard } from '../common/guards/member.guard';
-import { SuccessResponse } from '../common/common-responses';
+import { ResponseInterceptor } from '../common/interceptors/response.interceptor';
 import { User } from '../common/decorators/user.decorator';
 
 @ApiTags('Subscriptions')
@@ -66,15 +67,18 @@ export class SubscriptionController {
         status: 409,
         description: 'Conflict - User already has an active subscription',
     })
+    @UseInterceptors(
+        new ResponseInterceptor('Subscription created successfully', SubscriptionResponseDto),
+    )
     async createSubscription(
         @Body() createSubscriptionDto: CreateSubscriptionDto,
         @User() user: NonNullable<Req['user']>,
-    ): Promise<SuccessResponse<SubscriptionResponseDto>> {
+    ): Promise<SubscriptionResponseDto> {
         const subscription = await this.subscriptionService.createSubscription(
             user.id,
             createSubscriptionDto,
         );
-        return new SuccessResponse(subscription, 'Subscription created successfully');
+        return subscription;
     }
 
     @Get()
@@ -100,16 +104,17 @@ export class SubscriptionController {
         status: 404,
         description: 'Not found - No active subscription found',
     })
-    async getUserSubscription(
-        @Request() req: any,
-    ): Promise<SuccessResponse<SubscriptionResponseDto>> {
+    @UseInterceptors(
+        new ResponseInterceptor('Subscription retrieved successfully', SubscriptionResponseDto),
+    )
+    async getUserSubscription(@Request() req: any): Promise<SubscriptionResponseDto> {
         const subscription = await this.subscriptionService.getUserSubscription(req.user.id);
 
         if (!subscription) {
             throw new NotFoundException('No active subscription found');
         }
 
-        return new SuccessResponse(subscription, 'Subscription retrieved successfully');
+        return subscription;
     }
 
     @Patch('cancel')
@@ -134,9 +139,10 @@ export class SubscriptionController {
         status: 404,
         description: 'Not found - No active subscription found',
     })
-    async cancelSubscription(@Request() req: any): Promise<SuccessResponse<null>> {
+    @UseInterceptors(new ResponseInterceptor('Subscription cancelled successfully'))
+    async cancelSubscription(@Request() req: any): Promise<null> {
         await this.subscriptionService.cancelSubscription(req.user.id);
-        return new SuccessResponse(null, 'Subscription cancelled successfully');
+        return null;
     }
 
     @Post('switch')
@@ -173,14 +179,17 @@ export class SubscriptionController {
         status: 404,
         description: 'Not found - No active subscription or new plan not found',
     })
+    @UseInterceptors(
+        new ResponseInterceptor('Subscription switched successfully', SubscriptionResponseDto),
+    )
     async switchSubscription(
         @Body() switchSubscriptionDto: SwitchSubscriptionDto,
         @User() user: NonNullable<Req['user']>,
-    ): Promise<SuccessResponse<SubscriptionResponseDto>> {
+    ): Promise<SubscriptionResponseDto> {
         const subscription = await this.subscriptionService.switchSubscription(
             user.id,
             switchSubscriptionDto,
         );
-        return new SuccessResponse(subscription, 'Subscription switched successfully');
+        return subscription;
     }
 }

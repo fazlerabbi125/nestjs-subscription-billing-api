@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserResponseDto } from '../../user/dtos/user-response.dto';
+import { Type } from 'class-transformer';
 
 export class LoginResponseDto {
     @ApiProperty({
@@ -18,5 +19,6 @@ export class LoginResponseDto {
         description: 'User information',
         type: UserResponseDto,
     })
+    @Type(() => UserResponseDto)
     user: UserResponseDto;
 }

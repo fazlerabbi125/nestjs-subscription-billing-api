@@ -4,6 +4,7 @@ import {
     Param,
     ParseIntPipe,
     UseGuards,
+    UseInterceptors,
     Request,
     HttpCode,
     HttpStatus,
@@ -13,7 +14,7 @@ import { PaymentService } from './payment.service';
 import { PaymentResponseDto } from './dtos/payment-response.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { MemberGuard } from '../common/guards/member.guard';
-import { SuccessResponse } from '../common/common-responses';
+import { ResponseInterceptor } from '../common/interceptors/response.interceptor';
 
 @ApiTags('Payments')
 @Controller('payments')
@@ -50,9 +51,10 @@ export class PaymentController {
         // type: PaymentResponseDto,
         // isArray: true,
     })
-    async getUserPayments(@Request() req: any): Promise<SuccessResponse<PaymentResponseDto[]>> {
+    @UseInterceptors(new ResponseInterceptor('Payment history retrieved successfully'))
+    async getUserPayments(@Request() req: any): Promise<PaymentResponseDto[]> {
         const payments = await this.paymentService.getUserPayments(req.user.id);
-        return new SuccessResponse(payments, 'Payment history retrieved successfully');
+        return payments;
     }
 
     @Get(':id')
@@ -82,11 +84,17 @@ export class PaymentController {
         status: 404,
         description: 'Not found - Payment not found',
     })
+    @UseInterceptors(
+        new ResponseInterceptor(
+            'Payment invoice details retrieved successfully',
+            PaymentResponseDto,
+        ),
+    )
     async getPaymentById(
         @Param('id', ParseIntPipe) paymentId: number,
         @Request() req: any,
-    ): Promise<SuccessResponse<PaymentResponseDto>> {
+    ): Promise<PaymentResponseDto> {
         const payment = await this.paymentService.getPaymentById(req.user.id, paymentId);
-        return new SuccessResponse(payment, 'Payment invoice details retrieved successfully');
+        return payment;
     }
 }

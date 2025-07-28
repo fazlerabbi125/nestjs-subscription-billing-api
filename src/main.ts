@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as cookieParser from 'cookie-parser';
-// import { CustomExceptionFilter } from './common/custom-exception.filter';
+// import * as cookieParser from 'cookie-parser';
+import { CustomExceptionFilter } from './common/custom-exception.filter';
 import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
@@ -13,17 +13,20 @@ async function bootstrap() {
      * */
     app.enableCors({
         origin: true,
-        credentials: true,
+        // credentials: true,
     });
     // Enable validation globally
     app.useGlobalPipes(
         new ValidationPipe({
             whitelist: true,
             transform: true,
+            validationError: {
+                target: false,
+            },
             exceptionFactory(errors) {
-                const result: Record<string, string[]> = {};
+                const result: Record<string, string> = {};
                 errors.forEach((error) => {
-                    result[error.property] = Object.values(error.constraints || {});
+                    result[error.property] = Object.values(error.constraints || {})?.[0];
                 });
                 return new UnprocessableEntityException({
                     message: 'Validation error found',
@@ -33,8 +36,8 @@ async function bootstrap() {
         }),
     );
 
-    app.use(cookieParser());
-    // app.useGlobalFilters(new CustomExceptionFilter());
+    // app.use(cookieParser());
+    app.useGlobalFilters(new CustomExceptionFilter());
 
     // Swagger configuration
     const config = new DocumentBuilder()

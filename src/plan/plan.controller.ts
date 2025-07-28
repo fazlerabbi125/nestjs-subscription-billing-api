@@ -10,6 +10,7 @@ import {
     Query,
     ParseIntPipe,
     UseGuards,
+    UseInterceptors,
     HttpCode,
     HttpStatus,
 } from '@nestjs/common';
@@ -29,7 +30,7 @@ import { GetPlansQueryDto } from './dtos/get-plans-query.dto';
 import { PaginatedPlansResponseDto } from './dtos/paginated-plans-response.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
-import { SuccessResponse } from '../common/common-responses';
+import { ResponseInterceptor } from '../common/interceptors/response.interceptor';
 
 @ApiTags('Plans')
 @Controller('plans')
@@ -84,11 +85,14 @@ export class PlanController {
         status: 400,
         description: 'Bad request - Invalid query parameters',
     })
+    @UseInterceptors(
+        new ResponseInterceptor('Plans retrieved successfully', PaginatedPlansResponseDto),
+    )
     async getAllPlans(
         @Query() query: GetPlansQueryDto,
-    ): Promise<SuccessResponse<PaginatedPlansResponseDto<PlanResponseDto>>> {
+    ): Promise<PaginatedPlansResponseDto<PlanResponseDto>> {
         const result = await this.planService.getAllPlans(query);
-        return new SuccessResponse(result, 'Plans retrieved successfully');
+        return result;
     }
 
     @Get(':id')
@@ -106,11 +110,10 @@ export class PlanController {
         status: 404,
         description: 'Not found - Plan not found',
     })
-    async getPlanById(
-        @Param('id', ParseIntPipe) id: number,
-    ): Promise<SuccessResponse<PlanResponseDto>> {
+    @UseInterceptors(new ResponseInterceptor('Plan retrieved successfully', PlanResponseDto))
+    async getPlanById(@Param('id', ParseIntPipe) id: number): Promise<PlanResponseDto> {
         const plan = await this.planService.getPlanById(id);
-        return new SuccessResponse(plan, 'Plan retrieved successfully');
+        return plan;
     }
 
     @Post()
@@ -142,11 +145,10 @@ export class PlanController {
         status: 403,
         description: 'Forbidden - Admin access required',
     })
-    async createPlan(
-        @Body() createPlanDto: CreatePlanDto,
-    ): Promise<SuccessResponse<PlanResponseDto>> {
+    @UseInterceptors(new ResponseInterceptor('Plan created successfully', PlanResponseDto))
+    async createPlan(@Body() createPlanDto: CreatePlanDto): Promise<PlanResponseDto> {
         const plan = await this.planService.createPlan(createPlanDto);
-        return new SuccessResponse(plan, 'Plan created successfully');
+        return plan;
     }
 
     @Put(':id')
@@ -182,12 +184,13 @@ export class PlanController {
         status: 404,
         description: 'Not found - Plan not found',
     })
+    @UseInterceptors(new ResponseInterceptor('Plan updated successfully', PlanResponseDto))
     async updatePlan(
         @Param('id', ParseIntPipe) id: number,
         @Body() updatePlanDto: UpdatePlanDto,
-    ): Promise<SuccessResponse<PlanResponseDto>> {
+    ): Promise<PlanResponseDto> {
         const plan = await this.planService.updatePlan(id, updatePlanDto);
-        return new SuccessResponse(plan, 'Plan updated successfully');
+        return plan;
     }
 
     @Patch(':id/toggle-activation')
@@ -215,11 +218,12 @@ export class PlanController {
         status: 404,
         description: 'Not found - Plan not found',
     })
-    async togglePlanActivation(
-        @Param('id', ParseIntPipe) id: number,
-    ): Promise<SuccessResponse<PlanResponseDto>> {
+    @UseInterceptors(
+        new ResponseInterceptor('Plan activation toggled successfully', PlanResponseDto),
+    )
+    async togglePlanActivation(@Param('id', ParseIntPipe) id: number): Promise<PlanResponseDto> {
         const plan = await this.planService.togglePlanActivation(id);
-        return new SuccessResponse(plan, 'Plan activation toggled successfully');
+        return plan;
     }
 
     @Delete(':id')
@@ -246,8 +250,9 @@ export class PlanController {
         status: 404,
         description: 'Not found - Plan not found',
     })
-    async deletePlan(@Param('id', ParseIntPipe) id: number): Promise<SuccessResponse<null>> {
+    @UseInterceptors(new ResponseInterceptor('Plan deleted successfully'))
+    async deletePlan(@Param('id', ParseIntPipe) id: number): Promise<null> {
         await this.planService.deletePlan(id);
-        return new SuccessResponse(null, 'Plan deleted successfully');
+        return null;
     }
 }

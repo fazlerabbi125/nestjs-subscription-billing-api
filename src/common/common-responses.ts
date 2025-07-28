@@ -1,21 +1,23 @@
 export class SuccessResponse<T = any> {
-    success: boolean;
-    message: string;
-    result?: T;
+    readonly success = true;
+    readonly message: string;
+    readonly result: T;
 
-    constructor(data: T, message: string = 'Success') {
-        this.success = true;
+    constructor({ message, result }: Omit<SuccessResponse, 'success'>) {
         this.message = message;
-        this.result = data;
+        this.result = result;
     }
 }
 
-export const errResponse = <T = any>(message: string = 'Failed', errors?: Record<string, any>) => {
-    return {
-        success: false,
-        message,
-        errors,
-    };
-};
+export class ErrorResponse {
+    readonly success = false;
+    readonly message: string;
+    // readonly path?: string;
+    errors?: Record<string, any>;
 
-export type ErrorResType<T> = ReturnType<typeof errResponse<T>>;
+    constructor({ message, errors }: Omit<ErrorResponse, 'success'>) {
+        this.message = message;
+        this.errors = errors;
+        // this.path = path;
+    }
+}
